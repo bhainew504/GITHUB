@@ -1823,15 +1823,9 @@ def handle_broadcast_response(message):
 
 
 
-# Function to scan network and get IPs
-def scan_network(ip_range):
-    arp_request = sc.ARP(pdst=ip_range)
-    broadcast = sc.Ether(dst="ff:ff:ff:ff:ff:ff")
-    arp_request_broadcast = broadcast / arp_request
-    answered_list = sc.srp(arp_request_broadcast, timeout=2, verbose=False)[0]
-
-    devices = [{"IP": element[1].psrc, "MAC": element[1].hwsrc} for element in answered_list]
-    return devices
+def scan_network():
+    print("Scanning network using arp-scan...")
+    os.system("arp-scan --localnet")
 
 
 @bot.message_handler(func=lambda message: message.text == "🛜 GET IP")
@@ -1844,9 +1838,6 @@ def get_ip_addresses(message):
         response = "❌ No devices found."
     
     bot.reply_to(message, response)
-
-# Run the bot
-bot.polling()
     
 
 if __name__ == "__main__":
