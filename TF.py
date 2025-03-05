@@ -1820,44 +1820,39 @@ def handle_broadcast_response(message):
         response = "📤 𝗠𝗲𝘀𝘀𝗮𝗴𝗲 𝘀𝗲𝗻𝘁 𝘁𝗼 𝗮𝗹𝗹 𝘂𝘀𝗲𝗿𝘀."
 
     bot.reply_to(message, response)
-# ✅ Scan for Active IPs
+
+
+# ✅ Scan for Active Devices (IPs)
 def scan_network():
     print("📡 Scanning network for active devices...")
-    result = os.popen("nmap -sn 192.168.1.0/24").read()
+    result = os.popen("nmap -sn 192.168.1.0/24").read()  # Scan all devices in network
     
     found_ips = []
     for line in result.split("\n"):
         if "Nmap scan report for" in line:
-            ip = line.split(" ")[-1]
+            ip = line.split(" ")[-1]  # Extract IP address
             found_ips.append(ip)
     
-    return found_ips
+    return found_ips  # Return list of found IPs
 
-# ✅ Scan Open Ports on Each IP
+# ✅ Scan Open Ports & Detect Applications (Like PUBG, BGMI, Free Fire)
 def scan_ports(ip):
-    print(f"🔎 Scanning open ports on {ip}...")
-    result = os.popen(f"nmap -sV {ip}").read()
+    print(f"🔎 Scanning open ports and apps on {ip}...")
+    result = os.popen(f"nmap -sV {ip}").read()  # Get open ports + app names
     return result
-
 # ✅ When User Clicks "🛜 GET IP"
 @bot.message_handler(func=lambda message: message.text == "🛜 GET IP")
 def handle_get_ip_button(message):
     bot.reply_to(message, "⏳ Scanning network... Please wait.")
-    ip_list = scan_network()  # Get IP list
+    found_ips = scan_network()  # Get IP list
     
-    found_ips = []
-    for line in ip_list.split("\n"):
-        if "Nmap scan report for" in line:
-            ip = line.split(" ")[-1]  # Extract IP address
-            found_ips.append(ip)
-
     if not found_ips:
         bot.reply_to(message, "❌ No active devices found.")
     else:
-        response = "📡 **Scanned IPs & Open Ports:**\n"
+        response = "📡 **Scanned IPs, Open Ports & Apps:**\n"
         for ip in found_ips:
             response += f"\n🔹 **IP:** `{ip}`"
-            response += f"\n🔎 **Scanning open ports...**\n"
+            response += f"\n🔎 **Scanning open ports & apps on `{ip}`...**\n"
             scan_result = scan_ports(ip)  # Get open ports for IP
             response += f"```\n{scan_result}\n```"  # Format output
         bot.reply_to(message, response, parse_mode="Markdown")
