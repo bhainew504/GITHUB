@@ -1823,9 +1823,22 @@ def handle_broadcast_response(message):
 
 
 
+def scan_ports_with_service(ip):
+    print(f"Scanning open ports and services on {ip}...")
+    os.system(f"nmap -sV {ip}")  # -sV flag detects the service running on ports
+
 def scan_network():
     print("Scanning network using arp-scan...")
-    os.system("arp-scan --localnet")
+    os.system("arp-scan --localnet > ip_list.txt")  # Save IPs to a file
+    
+    with open("ip_list.txt", "r") as file:
+        for line in file:
+            if "192.168" in line:  # Filter valid IPs
+                ip = line.split()[0]
+                print(f"Found IP: {ip}")
+                scan_ports_with_service(ip)
+
+scan_network()
 
 
 @bot.message_handler(func=lambda message: message.text == "🛜 GET IP")
