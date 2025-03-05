@@ -1828,8 +1828,8 @@ def scan_ports_with_service(ip):
     os.system(f"nmap -sV {ip}")  # -sV detects the service running on ports
 
 def scan_network():
-    print("Scanning network using arp-scan...")
-    os.system("arp-scan --localnet > ip_list.txt")  # Save IPs to a file
+    print("Scanning network using Nmap ping scan...")
+    os.system("~/nmap/bin/nmap -sn 192.168.1.0/24 > ip_list.txt")  # Ping scan
 
     found_ips = []  # List to store found IPs
 
