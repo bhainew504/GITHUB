@@ -1825,34 +1825,41 @@ def handle_broadcast_response(message):
 
 def scan_ports_with_service(ip):
     print(f"Scanning open ports and services on {ip}...")
-    os.system(f"nmap -sV {ip}")  # -sV flag detects the service running on ports
+    os.system(f"nmap -sV {ip}")  # -sV detects the service running on ports
 
 def scan_network():
     print("Scanning network using arp-scan...")
     os.system("arp-scan --localnet > ip_list.txt")  # Save IPs to a file
-    
+
+    found_ips = []  # List to store found IPs
+
     with open("ip_list.txt", "r") as file:
         for line in file:
             if "192.168" in line:  # Filter valid IPs
                 ip = line.split()[0]
                 print(f"Found IP: {ip}")
-                scan_ports_with_service(ip)
+                found_ips.append(ip)  # Save IP
 
-scan_network()
-
+    return found_ips  # Return list of found IPs
 
 @bot.message_handler(func=lambda message: message.text == "🛜 GET IP")
-def get_ip_addresses(message):
+def handle_get_ip_button(message):
     bot.reply_to(message, "⏳ Scanning network... Please wait.")
-    devices = scan_network("192.168.1.1/24")  # Update with correct IP range
-    if devices:
-        response = "\n".join([f"📡 IP: {d['IP']} | 🔑 MAC: {d['MAC']}" for d in devices])
+    found_ips = scan_network()  # Scan for IPs
+    
+    if not found_ips:
+        bot.reply_to(message, "❌ No devices found on the network.")
     else:
-        response = "❌ No devices found."
-    
-    bot.reply_to(message, response)
-    
+        response = "📡 **Scanned IPs & Services:**\n"
+        for ip in found_ips:
+            response += f"\n🔹 **IP:** `{ip}`"
+            response += f"\n🔎 Scanning open ports on `{ip}`...\n"
+            scan_result = scan_ports_with_service(ip)  # Scan ports
+            response += f"```\n{scan_result}\n```"  # Send result in code block
+        bot.reply_to(message, response, parse_mode="Markdown")
 
+# ✅ Start polling for messages
+bot.polling()
 if __name__ == "__main__":
     print("✅ chal bhai on hogya!... ")
     while True:
